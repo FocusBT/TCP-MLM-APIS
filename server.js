@@ -22,7 +22,7 @@ const upload = multer({
 // connectDb();
 mongoose
   .connect(
-    process.env.MONGODB_KEY,
+    "mongodb+srv://wasi:Memon62313@cluster0.jnx9l5z.mongodb.net/?retryWrites=true&w=majority", // process.env.MONGODB_KEY,
     {
       useNewUrlParser: true,
       useUnifiedTopology: true,
@@ -497,17 +497,21 @@ app.post("/invest", async (req, res) => {
     if (!request) {
       return res.status(400).json({ message: "Request not found" });
     }
-    if (decision === "Accepted") {
-      await handleInvestment(email, request.amount, request.package);
-      request.Decision = "Accepted";
-      await request.save();
-      res.status(200).json({ message: "Investment successful" });
-    } else if (decision === "Rejected") {
-      request.Decision = "Rejected";
-      await request.save();
-      res.status(200).json({ message: "Investment Rejected" });
+    if (request.Decision === "Not Decided") {
+      if (decision === "Accepted") {
+        await handleInvestment(email, request.amount, request.package);
+        request.Decision = "Accepted";
+        await request.save();
+        res.status(200).json({ message: "Investment successful" });
+      } else if (decision === "Rejected") {
+        request.Decision = "Rejected";
+        await request.save();
+        res.status(200).json({ message: "Investment Rejected" });
+      } else {
+        res.status(400).json({ message: "Invalid decision" });
+      }
     } else {
-      res.status(400).json({ message: "Invalid decision" });
+      res.status(400).json({ message: "Request already decided" });
     }
   } catch (error) {
     console.error(error);
